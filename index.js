@@ -1,12 +1,17 @@
 const path = require("path");
-
+const cookieParser = require("cookie-parser");
 const express = require("express");
 // const router = express.Router();
 
+const verifyJWT = require("./middleware/verifyJWT");
+
 const app = express();
 app.use(express.json());
+app.use(/\/|index(.html)?/, (req, res) => res.send("APP"));
+
 app.use("/demo", require("./router/subdir"));
 
+// #region
 // app.use("/gett", (req, res) => {
 //   let data = "";
 //   req.on("data", (chunk) => {
@@ -17,14 +22,21 @@ app.use("/demo", require("./router/subdir"));
 //   });
 //   res.sendStatus(200);
 // });
+// #endregion
 
-app.use("/employees", require("./router/api/employees"));
+app.use(cookieParser());
 
 const assetPath = path.join(__dirname, "public");
 app.use("/assets", express.static(assetPath));
 
 app.use("/register", require("./router/api/register"));
 app.use("/auth", require("./router/api/auth"));
+app.use("/refresh", require("./router/api/refreshToken"));
+app.use("/logout", require("./router/api/logout"));
+
+app.use(verifyJWT);
+app.use("/employees", require("./router/api/employees"));
+
 // router
 //   .route("/")
 //   .get((req, res) => {
